@@ -1,0 +1,207 @@
+<style>
+  *{
+    margin: 0;
+    padding: 0;
+  }
+  .popupDetailMainView {
+    display: none;
+    position : fixed;
+    top : 0;
+    left : 0;
+    width : 100%;
+    height : 100%;
+    background-color: rgba(0,0,0,0.2);
+    align-items: center;
+    justify-content: center;
+  }
+  .popupDetailSubView {
+    width : auto;
+    height: auto;
+    padding: 20px;
+    background-color: white;
+    box-sizing: border-box;
+
+    border-radius: 10px;
+    box-shadow: 0 2px 3px 0 rgba(34, 36, 38, 0.15);
+  }
+  .popupDetailMainView.show {
+    display: flex;
+  }
+
+  #btitle {
+    width: 450px;
+  }
+  #bcontent {
+    width: 500px;
+    height: 300px;
+  }
+  .fileList {
+    display: flex;
+    justify-content: space-between;
+  }
+  .deleteFileCheckSpan{
+    font-size: 13px;
+    color: gray;
+    padding: 5px;
+  }
+  #delBtn{
+    border-radius: 7px;
+    background-color: black;
+    color: white;
+  }
+  #modBtn{
+    border-radius: 7px;
+    border: 1px solid lightgray;
+  }
+</style>
+
+<div id="popupBoardDetailView" class="popupDetailMainView">
+  <div class="popupDetailSubView">
+    <p style="font-size: 20px"><b>제목 </b><input type="text" id="btitle" disabled></p>
+    <div style="margin: 10px 0 10px 0; display: flex; justify-content: space-between;">
+    <p><b>작성자  </b><span id="writer"></span></p>
+    <p><span style=" font-size:15px; color: gray; " id="bdate"></span></p>
+    </div>
+    <textarea style="padding: 15px" id="bcontent"></textarea>
+    <div id="fileList"></div>
+    <div></div>
+    <input type="file" name="bd_files" id="bd_file" disabled="true" multiple>
+    <input type="hidden" id="bno" value="">
+    <div style="text-align: center; margin-top: 10px;">
+    <p>
+      <button id="modBtn">수정</button>
+      <button id="setBtn" disabled>적용</button>
+      <button id="delBtn">삭제</button>
+    </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 팝업 닫기 함수
+  let closeBoardDetailPopup = function () {
+    $("#popupBoardDetailView").toggleClass('show');
+    const attrShow = $("#popupBoardDetailView").attr('show');
+    if (attrShow === undefined || attrShow === false) {
+      $("body").css("overflow", "auto");
+    }
+    // 초기화
+    $("#btitle").attr("disabled", true);
+    $("#bcontent").attr("disabled", true);
+    $("#delBtn").attr("disabled", false);
+    $("#modBtn").attr("disabled", false);
+    $("#setBtn").attr("disabled", true);
+    $("#fileList").html("");
+    $("#bd_file").val("");
+    $("#bd_file").attr("disabled", true);
+    $("input[name=deleteFileCheck]").attr("disabled", true);
+    requestBoardPage($("#currentPage").html());
+  };
+  // 팝업 클릭 이벤트 처리
+  $("#popupBoardDetailView").click( (event) => {
+    if (event.target === $("#popupBoardDetailView")[0]) {
+      closeBoardDetailPopup();
+    }
+  });
+  // 파일 업로드 함수
+  let fileUpdateFunc = function (bno) {
+    let fileFormData = new FormData();
+    let filesData = $("#bd_file")[0].files;
+    if (filesData.length === 0) {
+      console.log("업로드할 파일 없음");
+      closeBoardDetailPopup();
+      return;
+    }
+    for (let i=0; i<filesData.length; i++) {
+      fileFormData.append("files", filesData[i]);
+    }
+    fileFormData.append("bno", bno);
+    $.ajax({
+      url : "/board/file/write",
+      type : "POST",
+      processData: false,
+      contentType: false,
+      cache: false,
+      data : fileFormData,
+      enctype: "multipart/form-data",
+      success : function (result){
+        // alert(result)
+      },
+      error : function (error){
+        alert("파일 업로드 실패");
+      },
+      complete: function () {
+        closeBoardDetailPopup();
+      }
+    });
+  }
+  // 파일 삭제 함수
+  let fileDeleteFunc = function () {
+    $("input[name='deleteFileCheck']:checked").each(function (){
+      console.log($(this).val());
+      $.ajax({
+        url: "/board/file/delete",
+        type: "get",
+        async: false,
+        data: {"bfnum": $(this).val()},
+        success: function (result) {
+          // alert(result)
+        },
+        error: function (result) {
+          alert(result);
+        },
+      });
+    });
+  }
+  // 적용 버튼 클릭 이벤트 처리
+  $("#setBtn").click(function () {
+    $.ajax({
+      url: "/board/update",
+      type: "POST",
+      data: {"bno": $("#bno").val(),
+        "btitle": $("#btitle").val(),
+        "bcontent": $("#bcontent").val()
+      },
+      success: function (result){
+        if (result.code != -1) {
+          fileDeleteFunc();
+          fileUpdateFunc($("#bno").val());
+        }
+        alert(result.msg);
+      },
+      error: function (error){
+        alert(error);
+        closeBoardDetailPopup();
+      }
+    });
+  })
+  // 삭제 버튼 클릭 이벤트 처리
+  $("#delBtn").click(function () {
+    $.ajax({
+      url: "/board/delete",
+      type: "GET",
+      data: {"bno": $("#bno").val()},
+      success: function (result){
+        alert(result.msg);
+      },
+      error: function (error){
+        alert(error);
+      },
+      complete: function () {
+        closeBoardDetailPopup();
+      }
+    });
+  });
+  // 수정 버튼 클릭 이벤트 처리
+  $("#modBtn").click(function () {
+    $("#btitle").attr("disabled", false);
+    $("#bcontent").attr("disabled", false);
+    $(this).attr("disabled", true);
+    $("#setBtn").attr("disabled", false);
+    $("#bd_file").val("");
+    $("#bd_file").attr("disabled", false);
+    $("input[name='deleteFileCheck']").each(function (){
+      $(this).attr("disabled", false);
+    })
+  });
+</script>

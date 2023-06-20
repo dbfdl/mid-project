@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 S.T.O.R.Y</title>
+    <link rel="stylesheet" href="./common.css" />
+    <link rel="stylesheet" href="./home.css" />
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+</head>
+<body>
+<header>
+    <div class="app-header">
+        <div class="app-header--main">
+            <div class="moveTopBtn"><h3 class="logo">404 S.T.O.R.Y<h3></div>
+<!--            <nav>-->
+<!--                <ul class="gnb">-->
+<!--                    <li>Home</li>-->
+<!--                    <li>Contact</li>-->
+<!--                    <li>Services</li>-->
+<!--                    <li>Etc</li>-->
+<!--                </ul>-->
+<!--            </nav>-->
+        </div>
+        <div class="app-header--utils">
+            <!-- <input type="text" placeholder="Input Something..." /> -->
+            <button id="signin_btn" class="btn signin btn-open-popup">Sign In</button>
+            <button type="submit" id="join" class="join-open-popup">Sign Up</button>
+        </div>
+    </div>
+</header>
+<section class="main-banner">
+    <p class="main-banner--title">Oops O_o;</p>
+    <p class="main-banner--title">404 Page Not Found.</p>
+    <p class="main-banner--description">
+        ~Our story that can not be found~
+    </p>
+</section>
+<section class="banner">
+    <div id="content--title--div">
+        <img width="100%" src="banner_bono.png">
+    </div>
+</section>
+<section class="content">
+    <th:block th:include="board_main.html"></th:block>
+    <th:block th:include="board_write.html"></th:block>
+    <th:block th:include="board_detail.html"></th:block>
+    <th:block th:include="login.html"></th:block>
+    <th:block th:include="join.html"></th:block>
+</section>
+<section id="sub_content_section" class="content">
+    <th:block th:include="anonymous_main.html"></th:block>
+    <th:block th:include="anonymous_write.html"></th:block>
+    <th:block th:include="tiplink_main.html"></th:block>
+    <th:block th:include="tiplink_write.html"></th:block>
+</section>
+<footer>
+<!--    <ul class="footer-nav">-->
+<!--        <li>Daily Check</li>-->
+<!--        <li>FAQs</li>-->
+<!--        <li>Time Study</li>-->
+<!--        <li>About us</li>-->
+<!--        <li>Contact us</li>-->
+<!--    </ul>-->
+    <div class="footer-info">
+        <p>
+            Professor Park. Room number 404. ICIA
+        </p>
+        <p>
+            Team Leader, owohaha123@gmail.com<br>
+            Team Member, yuli@naver.com<br>
+            Team Member, dltlsdn9304@naver.com<br>
+            Team Member, icia20220729t5ar@gmail.com<br>
+        </p>
+    </div>
+</footer>
+</body>
+<script th:inline="javascript">
+    let initFunc = () => {
+        const $ = (selector) => document.querySelector(selector);
+        window.onload = () => {
+            const $header = $("header");
+            window.addEventListener("scroll", (e) => {
+                if (window.scrollY > 300 && $header.classList.contains("active"))
+                    return;
+                $header.classList[window.scrollY > 200 ? "add" : "remove"]("active");
+            });
+        };
+    };
+
+    const $topBtn = document.querySelector(".moveTopBtn");
+
+    // 버튼 클릭 시 맨 위로 이동
+    $topBtn.onclick = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    initFunc();
+</script>
+</html>
